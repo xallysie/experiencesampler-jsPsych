@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="edu.princeton.dailyidentitystudy" version="1.0.4" android-versionCode="4" ios-CFBundleVersion="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Daily Studies About the Self</name>
+    <description>A smartphone app developed to conduct experience-sampling smartphone studies using the jsPsych framework.</description>
+    <author email="sally.yj.xie@gmail.com" href="https://sallyxie.org">
+        Sally Xie
+    </author>
+    <content src="index.html" />
+     <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    <platform name="android">
+        <allow-intent href="market:*" />
+        <preference name="AndroidInsecureFileModeEnabled" value="true" />
+        <icon src="www/img/icon.png" density="ldpi" />
+        <icon src="www/img/icon.png" density="mdpi" />
+        <icon src="www/img/icon.png" density="hdpi" />
+        <icon src="www/img/icon.png" density="xhdpi" />
+        <icon src="www/res/icon.png" density="xhdpi" />
+        <icon src="res/icon.png" density="xhdpi" />
+    </platform>
+    <platform name="ios">
+        <allow-intent href="itms:*" />
+        <allow-intent href="itms-apps:*" />
+        <icon src="www/img/logo.png" width="192" height="192"/>
+        <icon src="www/img/icon.png" density="ldpi" />
+        <icon src="www/img/icon.png" density="mdpi" />
+        <icon src="www/img/icon.png" density="hdpi" />
+        <icon src="www/img/icon.png" density="xhdpi" />
+    </platform>
+</widget>

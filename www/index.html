@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    @JSPSYCH_EXPERIENCESAMPLING_PLUGIN_LICENSE_START@
+
+    Cordova extension for jsPsych
+        written by Sally Xie (sallyxie.org)
+        2023/06/23
+        for latest ver see https://github.io/xallysie/cordova-jsPsych-experiencesampling-plugin
+
+    The MIT License (MIT)
+    Copyright (c) 2023 Sally Xie
+
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+-->
+<html>
+  <head>
+    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'">
+	<meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <title>Daily Studies About the Self</title>
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/plugin/mustache.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/plugin/jquery-2.1.3.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/plugin/moment-with-locales.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/plugin/combodate.js"></script>
+    <script src="jsPsych/dist/jspsych.js" charset="utf-8" type="text/javascript"></script>
+    <script src="jsPsych/dist/plugin-html-button-response.js" charset="utf-8" type="text/javascript"></script>
+    <script src="jsPsych/dist/plugin-survey-text.js" charset="utf-8" type="text/javascript"></script>
+    <script src="jsPsych/dist/plugin-survey-html-form.js" charset="utf-8" type="text/javascript"></script>
+    <script src="jsPsych/dist/plugin-survey-multi-choice.js" charset="utf-8" type="text/javascript"></script>
+    <script src="jsPsych/dist/plugin-survey-multi-select.js" charset="utf-8" type="text/javascript"></script>
+    <script src="jsPsych/dist/plugin-call-function.js" charset="utf-8" type="text/javascript"></script>
+    <link href="jsPsych/jspsychsheet.css" rel="stylesheet" >
+    <link href="jsPsych/dist/jspsych.css" rel="stylesheet" type="text/css" />
+    <script src="jsPsych/ajax/libs/jquery/3.5.1/jquery.min.js" charset="utf-8" type="text/javascript"></script>
+    <script src="jsPsych/firebasejs/8.10.1/firebase-app.js" charset="utf-8" type="text/javascript"></script>
+    <script src="jsPsych/firebasejs/8.10.1/firebase-firestore.js" charset="utf-8" type="text/javascript"></script>
+    <script src="jsPsych/datapipe/index.browser.min.js" charset="utf-8" type="text/javascript"></script>
+    <script src="index.js"></script>
+
+    <style>
+        /* change look of stimulus presentation */
+        #stimulus{
+            font-size:20px;
+            line-height:1.4em;
+        }
+        /* change look of instructions */
+        .instructions {
+            font-size: 22px;
+            font-weight: bold;
+            line-height:1.4em;
+        }
+        /* change look of trials */
+        .trial {
+            font-size:20px;
+            font-weight: bold;
+            line-height:1.4em;
+        }
+        /* change look of button elements */
+        .jspsych-btn {
+            min-height: 79px;
+            min-width: 79px;
+            padding: 7px;
+            width: 110px; /* default width for larger screens */
+            height: 80px;
+            font-size: 16px;
+            font-family: "Open Sans", "Arial", sans-serif;
+            white-space: normal;
+            border: 0px solid transparent;
+            border-radius: 4px;
+            color: #333;
+            background-color: #ffa748;
+            border-color: #ffa748;
+        }
+        .jspsych-html-button-response-button{
+            margin-top: 35px !important;
+        }
+        /* change hover style of button elements */
+        @media (hover: hover) {
+            .jspsych-btn:hover {
+                background-color: #f1f1f1;
+                border-color: #f1f1f1;
+            }
+        }
+        .jspsych-btn:active {
+            background-color: #ffa748;
+            border-color: #ffa748;
+        }
+        /* media query to change look of buttons on mobile devices */
+        @media (max-width: 768px) {
+            .jspsych-btn {
+                width: 80vw; /* Set width to 80% of the viewport width for mobile devices */
+                padding: 10px 3px 10px 3px; /*top right bottom left */
+                height: auto;
+                min-height: 45px;
+                min-width: 79px;
+                font-weight: bold;
+                font-size: 18px; 
+                white-space: normal; /* allows button height to expand if text overflows */
+            }
+            .jspsych-html-button-response-button + .jspsych-html-button-response-button {
+                margin-top: 18px !important; /* white space above buttons */
+            }
+        }
+        /* change look of consent form and debriefing statement */
+        .longtext {
+            font-size: 18px;
+            font-weight: normal;
+            line-height:1.4em;
+            max-width: 70%;
+            text-align: left;
+            padding-top:80px;
+            padding-bottom: 80px;
+        }
+        /* change look of setup questions */
+        .setup {
+            font-size:20px;
+            font-weight: normal;
+            line-height:1.4em;
+        }
+        /* change look of surveymatcher */
+        @media screen {
+            .surveymatcher {
+            text-align: left;
+            max-width: 70%;
+            font-size: 18px;
+            font-weight: normal;
+            line-height: 1.4em;
+            padding-top: 30px;
+            padding-bottom: 30px;
+            padding-left: 25vw;
+        }
+        }
+    </style>
+  </head>
+  <body onload="onLoad()">
+    <!--HTML TEMPLATE-->
+    <!--body onload="app.initialize()"-->
+        <div class="app">
+            <div id="window">
+                <div id='display_stage_background'></div>
+                <div id='display_stage'></div>
+            </div>
+        </div>
+  </body>
+  <script>
+    initJsPsych({
+        display_element: 'display_stage'
+    });
+
+  </script>
+</html>
