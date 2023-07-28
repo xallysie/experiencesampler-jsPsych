@@ -57,6 +57,7 @@ var permissions = cordova.plugins.permissions;
 /* initialize firebase storage (primary data storage method) */
 //**CHANGEME */
 var firebaseConfig = {
+    databaseURL: "socialselves.firebaseapp.com",
     apiKey: "AIzaSyAeZCaC7d5y0xqwQ_2iI2kBOND9yAKEKf4",
     authDomain: "socialselves.firebaseapp.com",
     projectId: "socialselves",
@@ -66,6 +67,7 @@ var firebaseConfig = {
     measurementId: "G-1KT23F2PRK" // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 };
 firebase.initializeApp(firebaseConfig);
+firebase.firestore().settings({ experimentalAutoDetectLongPolling: true, merge:true }); // for ios
 var db = firebase.firestore();
 
 /* initialize jsPsych */
@@ -164,10 +166,11 @@ var app = {
         // HIGHLY RECOMMEND adding +1 to each line, which will add 1 day to each of these new date objects so the surveys begin the next day
         // e.g., time1.getDate() + parseInt(1);
         // this allows the nightly compliance checker to function properly; changing this will mess with compliance checker unless you modify that
-        var day1 = time1.getDate() + parseInt(1); //**TESTING: to test app, remove the parseInt(1) so the notifs fire same day */
-        var day2 = time2.getDate() + parseInt(1); 
-        var day3 = time3.getDate() + parseInt(1); 
-        var day4 = time4.getDate() + parseInt(1); 
+        var day1 = time1.getDate() + 1; //**TESTING: to test app, remove the parseInt(1) so the notifs fire same day */
+        console.log("day1: "+day1);
+        var day2 = time2.getDate() + 1;
+        var day3 = time3.getDate() + 1;
+        var day4 = time4.getDate() + 1;
     
         // now set the survey start and end times based on participants' responses from the setup questions
         // this block of code does not allow participants to select their own survey 'end time'; it is set to 3 hours (surveyblockhour)
@@ -184,7 +187,7 @@ var app = {
         // survey1EndTime = time2.setHours(parseInt(survey1End[0]), parseInt(survey1End[1]), 0, 0);
         
         var survey2StartTime = time3.setDate(day3); 
-        survey2StartTime = time3.setHours(parseInt(survey2Start[0]), parseInt(survey2Start[1]), 0, 0); 
+        survey2StartTime = time3.setHours((parseInt(survey2Start[0])-parseInt(surveyblockhour)), parseInt(survey2Start[1]), 0, 0); 
         var survey2EndTime = time4.setDate(day4); 
         survey2EndTime = time4.setHours((parseInt(survey2Start[0])+parseInt(surveyblockhour)), parseInt(survey2Start[1]), 0, 0);
 
@@ -270,7 +273,7 @@ var app = {
             //**CHANGEME */
             if (missingSurveyCount < 4){
                 cordova.plugins.notification.local.schedule({
-                    id: 401, // Unique ID for the missed surveys notification
+                    id: 99401, // Unique ID for the missed surveys notification
                     trigger: { at: eveningNotifTime },
                     text: "You have missed a survey yesterday. Please respond to your notifications on time, to remain eligible for the end-of-study bonus.",
                     title: "Missed Survey Reminder",
@@ -279,7 +282,7 @@ var app = {
                 });
             } else if (missingSurveyCount >= 4 && missingSurveyCount <= 7){
                 cordova.plugins.notification.local.schedule({
-                    id: 401, // Unique ID for the missed surveys notification
+                    id: 99402, // Unique ID for the missed surveys notification
                     trigger: { at: eveningNotifTime },
                     text: "You have missed a survey yesterday. To be eligible for the end-of-study bonus, please do not miss more than 7 surveys total.",
                     title: "Missed Survey Reminder",
@@ -288,9 +291,9 @@ var app = {
                 });
             } else if (missingSurveyCount > 7){
                 cordova.plugins.notification.local.schedule({
-                    id: 401, // Unique ID for the missed surveys notification
+                    id: 99403, // Unique ID for the missed surveys notification
                     trigger: { at: eveningNotifTime },
-                    text: "You have missed a survey yesterday. If to your notifications on time.",
+                    text: "You have missed a survey yesterday. Please remember to respond to your notifications on time.",
                     title: "Missed Survey Reminder",
                     priority: 2,
                     vibrate: true,
@@ -315,6 +318,7 @@ var app = {
     addGlobalVars:function(){
         /* record time that participant finished survey */
         var Date_end_time = new Date().toLocaleString('en-US');
+        var pID = localStore.pID;
         snoozed = 0;
         var surveyCount = localStore.surveyCount;
         var surveyStart = localStore.surveyStart;
@@ -328,6 +332,7 @@ var app = {
             ParGen_FM: ParGen_FM,
             ParGen_MF: ParGen_MF, 
             ParGen_NB: ParGen_NB,
+            pID: pID,
             surveyCount: surveyCount,
             studyStart: surveyStart,
             studyEnd: surveyEnd,
@@ -350,7 +355,7 @@ var app = {
         //**CHANGEME */
         // declare the name of the collection/folder on firebase storage to store data from current survey
         // the code below saves to different collections depending on whether participants snoozed/setup the app or completed a survey
-        var firebaseFolder = snoozed || settingup ? "expsampling_jsPsych_test_setuporsnooze" : "expsampling_jsPsych_test_responses";
+        var firebaseFolder = snoozed || settingup ? "expsampling_jsPsych_FULL_setuporsnooze" : "expsampling_jsPsych_FULL_responses";
 
         // save data: wrap in a promise to check if data successfully sent
         db.collection(firebaseFolder).add(trialdata_saveObj);
@@ -457,11 +462,18 @@ var app = {
             return false
         }
     },
-    convertEpochTime: function(epoch){ // convert epoch time to human-readable time (example usage: notifs.map(convertEpochTime))
+    convertEpochTime: function(epoch) {
         const somedate = new Date(epoch);
-        // Format the time as desired (e.g., "HH:mm:ss" for 24-hour format, "hh:mm:ss a" for 12-hour format)
-        const formattedTime = somedate.toLocaleTimeString("en-US", { hour12: false });
-        return formattedTime;
+        const formattedDateTime = somedate.toLocaleString("en-US", {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: false
+        });
+        return formattedDateTime;
     },
     parGenPronouns: function(){
         // create and store gendered pronouns
@@ -660,6 +672,14 @@ if(localStore.pID === " " || !localStore.pID || localStore.pID == "undefined"){
                     icon: 'res://img/icon.png',
                     smallIcon: 'res://img/icon.png'
                 });
+                /* send test notification */
+                cordova.plugins.notification.local.schedule({
+                    icon: 'ic_launcher',
+                    id: id,
+                    title: 'Daily Surveys',
+                    text: 'Your test notification has fired!',
+                    trigger: {in: 3, unit: 'second'},
+                    });
             } else if (deviceOS == 1 || /Android/i.test(navigator.userAgent) == true){ // if participant is using android
                 // request permissions using the cordova notification permission request module for android 13+, api33+
                 function permerrorCallback() {
@@ -862,7 +882,7 @@ if(localStore.pID === " " || !localStore.pID || localStore.pID == "undefined"){
 
         // check if the current time is within the survey interval
         if (parseInt(now) > parseInt(start) && parseInt(now) < parseInt(end)){ 
-            console.log(now); console.log(start); console.log(end); console.log(parseInt(end));
+            console.log(now); console.log(start); console.log(end); 
             // if it is, initialize the survey and show the welcoem back and snooze questions
             var welcomeBack = {
                 type: jsPsychHtmlButtonResponse,
@@ -903,16 +923,43 @@ if(localStore.pID === " " || !localStore.pID || localStore.pID == "undefined"){
         } else if (parseInt(now) < parseInt(start) || parseInt(now) > parseInt(end)) { // if the current time is not within the scheduled survey window, display 'no survey available' message
             var noSurveyAvailable = {
                 type: jsPsychHtmlButtonResponse,
-                stimulus: "It is not time for you to complete a survey now. Please wait until your next notification.<br/><br/>If you believe you received this message in error, please close the app completely (swipe the app up), or contact us on Prolific or at crockett.laboratory@gmail.com.",
-                choices: ['NEXT'],
+                stimulus: "It is not time for you to complete a survey now. Please wait until your next notification.<br/><br/>If you believe you received this message in error, please click on the 'debug app' button below, and then contact us on Prolific or at crockett.laboratory@gmail.com.",
+                choices: ['Please close the app fully - swipe up', 'Debug app'],
                 data: {WhatWasRating:'NoSurveyAvailable'},
                 css_classes: ['trial'],
+                on_finish: function(){
+                    if(jsPsych.data.getLastTrialData().values()[0].response == 0){
+                        jsPsych.endExperiment("Please close the app fully (swipe the app up).")
+                    };
+                }
+            };
+            timeline.push(noSurveyAvailable);
+            var noSurveyDebug = {
+                type:jsPsychHtmlButtonResponse,
+                stimulus: function(){
+                    var text = "The current time (epoch) is: "+now+" - "+app.convertEpochTime(now)+".<br>The survey start time is: "+start+" - "+app.convertEpochTime(start)+".<br>The survey end time is "+end+" - "+app.convertEpochTime(end)+".<br>Your surveyCount is "+localStore.surveyCount+" out of 42.<br>You have missed "+missingSurveyCount+" surveys.<br>Your pID is "+localStore.pID+".<br><br>Please save this information and send it to us on Prolific or at crockett.laboratory@gmail.com.<br><br>Please close the app fully (swipe the app up.)";
+                    return text;
+                },
+                choices: ['NEXT'],
+                data: {WhatWasRating:'DebugNotif'},
+                css_classes: ['longtext'],
                 on_finish: function(){
                     jsPsych.endExperiment("Please close the app fully (swipe the app up).")
                 }
             };
-            timeline.push(noSurveyAvailable);
-        }
+            var noSurveyDebug_Conditional = {
+                timeline: [noSurveyDebug],
+                post_trial_gap: 0,
+                conditional_function: function(){
+                    if (jsPsych.data.getLastTrialData().values()[0].response == 1){
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            };
+            timeline.push(noSurveyDebug_Conditional);
+        };
     };
 };
 
@@ -920,6 +967,7 @@ if(localStore.pID === " " || !localStore.pID || localStore.pID == "undefined"){
 //** Survey Questions */
 
 if (surveytime == true){ // display these trials only if it's time to complete a survey
+    jsPsych.randomization.setSeed(); // re-randomize with new seed
     
     //**Q1 - Rating Yourself */
     var RateYourself_instructions = {
@@ -971,21 +1019,19 @@ if (surveytime == true){ // display these trials only if it's time to complete a
         data: {WhatWasRating:'RateYourself_dom'},
         css_classes: ['trial'],
     };
-    // Q1 - define task list
-    var Q1_RateYourself_block = {
-        timeline: [
+    // Q1 - define task array
+    var Q1_RateYourself_array = [
             RateYourself_att,
             RateYourself_com,
             RateYourself_dom,
             RateYourself_fri,
             RateYourself_int,
             RateYourself_tru,
-        ],
-        randomize_order: true,
-        sample: {
-            type: 'without-replacement',
-            size: 6
-        }
+    ];
+    /* use jsPsych.randomization.shuffle to randomize the order of the trials, then add to the timeline in random order */
+    var Q1_RateYourself_array_random = jsPsych.randomization.shuffle(Q1_RateYourself_array);
+    var Q1_RateYourself_block = {
+        timeline: Q1_RateYourself_array_random,
     };
     timeline.push(RateYourself_instructions);
     timeline.push(Q1_RateYourself_block);
@@ -1011,7 +1057,7 @@ if (surveytime == true){ // display these trials only if it's time to complete a
     var Q2_HowClose = {
         type: jsPsychHtmlButtonResponse,
         stimulus: "In your current situation, how close are you to the people around you?<p style='font-weight:normal;'>That is, to what extent are your relationships with the people around you characterized by deeply understanding each other, accepting and validating each other's natures, and striving to care for and promote each other's overall well-being?</p>",
-        choices: ['1-Not at all close','2','3','4','5-Neutral','6','7','8','9-Very close'],
+        choices: ['1-Not at all close','2','3','4-Neutral','5','6','7-Very close'],
         data: {WhatWasRating:'HowClose'},
         css_classes: ['trial'],
     };
@@ -1032,7 +1078,7 @@ if (surveytime == true){ // display these trials only if it's time to complete a
     var Q2_WithOthers_Endorsement_general = {
         type: jsPsychHtmlButtonResponse,
         stimulus: function(){
-            var text = "Do you share the same views about <u>"+ParGenPlural+" in general</u> as the people around you <u>right now?</u><br><br>That is, do you agree or disagree with how they see "+ParGenPlural+"?";
+            var text = "<b>Do you share the same views about <u>"+ParGenPlural+" in general</u> as the people around you <u>right now?</u><br><br>That is, do you agree or disagree with how they see "+ParGenPlural+"?</b>";
             return text;
         },
         choices: ['1-Strongly disagree','2-Disagree','3-Slightly disagree','4-Neither agree nor disagree','5-Slightly agree','6-Agree','7-Strongly agree'],
@@ -1042,7 +1088,7 @@ if (surveytime == true){ // display these trials only if it's time to complete a
     var Q2_WithOthers_Endorsement_ideal = {
         type: jsPsychHtmlButtonResponse,
         stimulus: function(){
-            var text = "Do you share the same views about the <u>ideal "+ParGenSingular+"</u> as the people around you <u>right now?</u><br><br>That is, do you agree or disagree with how they see the ideal "+ParGenSingular+"?";
+            var text = "<b>Do you share the same views about the <u>ideal "+ParGenSingular+"</u> as the people around you <u>right now?</u><br><br>That is, do you agree or disagree with how they see the ideal "+ParGenSingular+"?</b>";
             return text;
         },
         choices: ['1-Strongly disagree','2-Disagree','3-Slightly disagree','4-Neither agree nor disagree','5-Slightly agree','6-Agree','7-Strongly agree'],
@@ -1156,8 +1202,7 @@ if (surveytime == true){ // display these trials only if it's time to complete a
     };
     // Q2_FirstOrderSimilarity_general and Q2_FirstOrderSimilarity_alone - ask this when participants are alone as well
     // Q2 - define task list
-    var Q2_WithOthers_block = {
-        timeline: [
+    var Q2_WithOthers_array = [
             Q2_HowClose,
             Q2_HowManyF,
             Q2_HowManyM,
@@ -1167,28 +1212,21 @@ if (surveytime == true){ // display these trials only if it's time to complete a
             Q2_WithOthers_ThirdOrderSimilarity_ideal,
             Q2_FirstOrderSimilarity_general,
             Q2_FirstOrderSimilarity_ideal,
-        ],
-        randomize_order: true,
-        sample: {
-            type: 'without-replacement',
-            size: 9
-        }
-    };
-    var Q2_Alone_block = {
-        timeline: [
+    ];
+    var Q2_Alone_array = [
             Q2_Alone_Endorsement_general,
             Q2_Alone_Endorsement_ideal,
             Q2_Alone_ThirdOrderSimilarity_general,
             Q2_Alone_ThirdOrderSimilarity_ideal,
             Q2_FirstOrderSimilarity_general,
             Q2_FirstOrderSimilarity_ideal
-        ],
-        randomize_order: true,
-        sample: {
-            type: 'without-replacement',
-            size: 6
-        }
-    };
+    ];
+    // randomly shuffle order
+    var Q2_WithOthers_array_random = jsPsych.randomization.shuffle(Q2_WithOthers_array);
+    var Q2_Alone_array_random = jsPsych.randomization.shuffle(Q2_Alone_array);
+    // add to timeline
+    var Q2_WithOthers_block = {timeline: Q2_WithOthers_array_random};
+    var Q2_Alone_block = {timeline: Q2_Alone_array_random};
     // Q2 - create conditional nodes to determine which timeline to run, depending on whether p is alone or with others
     var Q2_WithOthers_Conditional = {
         timeline: [Q2_WithOthers_block],
@@ -1277,16 +1315,19 @@ if (surveytime == true){ // display these trials only if it's time to complete a
         data: {WhatWasRating:'SelfEsteem'},
         css_classes: ['trial'],
     };
-    var Q3_WellBeing_block = {
-        timeline: [
+    // put trials into block
+    var Q3_WellBeing_array = [
             Q3_MoodEnergy,
             Q3_MoodValence,
             Q3_Anxiety,
             Q3_Sad,
             Q3_WellBeing,
             Q3_SelfEsteem,
-        ],
-        randomize_order: true
+    ];
+    // randomly shuffle block
+    var Q3_WellBeing_array_random = jsPsych.randomization.shuffle(Q3_WellBeing_array);
+    var Q3_WellBeing_block = {
+        timeline: Q3_WellBeing_array_random,
     };
     timeline.push(Q3_WellBeing_block);   
 };
@@ -1311,7 +1352,7 @@ var Add_Variables = {
 const save_data_OSF = {
     type: jsPsychPipe,
     action: "save",
-    experiment_id: "V8YB4SpcpFis", //**CHANGEME */
+    experiment_id: "qwRXQ37fP2aQ", //**CHANGEME */
     filename: filename,
     data_string: ()=>jsPsych.data.get().csv()
 };
