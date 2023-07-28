@@ -56,15 +56,16 @@ var permissions = cordova.plugins.permissions;
 
 /* initialize firebase storage (primary data storage method) */
 //**CHANGEME */
+// Replace this config file with the one generated in your Firebase console
 var firebaseConfig = {
-    databaseURL: "socialselves.firebaseapp.com",
-    apiKey: "AIzaSyAeZCaC7d5y0xqwQ_2iI2kBOND9yAKEKf4",
-    authDomain: "socialselves.firebaseapp.com",
-    projectId: "socialselves",
-    storageBucket: "socialselves.appspot.com",
-    messagingSenderId: "279784529433",
-    appId: "1:279784529433:web:9fcfd4f03389fa259bd488",
-    measurementId: "G-1KT23F2PRK" // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    databaseURL: "YOURFIREBASEAPPNAME.FIREBASEDOMAIN.com",
+    apiKey: "ABUNCHOFCHARACTERSANDSYMBOLSTHISISYOURAPIKEY",
+    authDomain: "YOURFIREBASEAPPNAME.FIREBASEDOMAIN.com",
+    projectId: "YOURFIREBASEPROJECTID",
+    storageBucket: "YOURFIREBASEAPPNAME.appspot.com",
+    messagingSenderId: "ABUNCHOFNUMBERS",
+    appId: "ABUNCHOFNUMBERSANDCHARACTERSTHISISYOURAPPID",
+    measurementId: "SEVERALCHARACTERS" // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 };
 firebase.initializeApp(firebaseConfig);
 firebase.firestore().settings({ experimentalAutoDetectLongPolling: true, merge:true }); // for ios
@@ -1352,7 +1353,7 @@ var Add_Variables = {
 const save_data_OSF = {
     type: jsPsychPipe,
     action: "save",
-    experiment_id: "qwRXQ37fP2aQ", //**CHANGEME */
+    experiment_id: "V8YB4SpcpFis", //**CHANGEME */
     filename: filename,
     data_string: ()=>jsPsych.data.get().csv()
 };
