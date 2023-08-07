@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="edu.princeton.dailyidentitystudy" version="1.1.6" android-versionCode="16" ios-CFBundleVersion="1.1.6" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="edu.princeton.dailyidentitystudy" version="1.2.0" android-versionCode="20" ios-CFBundleVersion="1.2.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Daily Studies About the Self</name>
     <description>A smartphone app developed to conduct experience-sampling smartphone studies using the jsPsych framework.</description>
     <author email="sally.yj.xie@gmail.com" href="https://sallyxie.org">
