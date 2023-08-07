@@ -5,7 +5,7 @@
 
     @ JSPSYCH EXPERIENCESAMPLING PLUGIN LICENSE @
     Experience-sampling extension for jsPsych adapted from ExperienceSampler
-    last updated 2023/07/19 - https://github.io/xallysie/cordova-jsPsych-experiencesampling-plugin 
+    last updated 2023/08/07 - https://github.com/xallysie/experiencesampler-jsPsych
     Copyright (c) 2023 Sally Xie
 
     The MIT License (MIT)
@@ -64,17 +64,17 @@ var permissions = cordova.plugins.permissions;
 /* initialize firebase storage (primary data storage method) */
 //**CHANGEME */
 var firebaseConfig = {
-    databaseURL: "socialselves.firebaseapp.com",
-    apiKey: "AIzaSyAeZCaC7d5y0xqwQ_2iI2kBOND9yAKEKf4",
-    authDomain: "socialselves.firebaseapp.com",
-    projectId: "socialselves",
-    storageBucket: "socialselves.appspot.com",
-    messagingSenderId: "279784529433",
-    appId: "1:279784529433:web:9fcfd4f03389fa259bd488",
-    measurementId: "G-1KT23F2PRK" // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    databaseURL: "PasteYourFirebaseAppName.firebasedomainname.com", // e.g., myapp.firebaseapp.com
+    apiKey: "PASTEALPHANUMERICSTRINGGOESHERE", // 
+    authDomain: "PasteYourFirebaseAppName.firebasedomainname.com",
+    projectId: "PasteYourFirebaseAppName",
+    storageBucket: "PasteYourFirebaseAppName.storagedomain.com", // e.g., my app.appspot.com
+    messagingSenderId: "PASTESTRINGOFNUMBERS", // 
+    appId: "PASTEALPHANUMERICSTRINGGOESHERE",
+    measurementId: "PASTEOPTIONALMEASUREMENTIDHERE" // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 };
 firebase.initializeApp(firebaseConfig);
-firebase.firestore().settings({ experimentalAutoDetectLongPolling: true, merge:true }); // for ios
+firebase.firestore().settings({ experimentalAutoDetectLongPolling: true, merge:true }); // experimental: required for ios
 var db = firebase.firestore();
 
 /* initialize jsPsych */
@@ -88,7 +88,7 @@ var jsPsych = initJsPsych({
     // study finish function
     //**CHANGEME */
     on_finish: function () {     
-        /* show survey completion message with prolific link */
+        /* show survey completion message */
         var jspsych_content = document.getElementById("jspsych-content");
         jspsych_content.innerHTML = 'Done! Please close the app completely (swipe the app up).'
     }
@@ -117,7 +117,7 @@ var surveyCountMax = 42; // total number of surveys to send //**CHANGEME */
 var surveyblockhour = 3; // declare how long each survey block should be, in hours (for scheduling notifications) //**CHANGEME */
 var savedata_success; // variables for checking whether data successfully sent
 var notifs = []; // array to store notifications; will check this to see if participants should have survey access
-var surveyWindow = 10800000; // survey window in milliseconds (3 hours); determines how long participants have survey access for //**TESTING change back to 10800000 */
+var surveyWindow = 10800000; // survey window in milliseconds (3 hours); determines how long participants have survey access for //**TESTING change this to a shorter window to test survey access windows */
 var Date_start_time = new Date().toLocaleString('en-US');
 
 
@@ -171,10 +171,9 @@ var app = {
         
         // declare variables that will represent the survey start and end *dates* (not times) for each interval
         // HIGHLY RECOMMEND adding +1 to each line, which will add 1 day to each of these new date objects so the surveys begin the next day
-        // e.g., time1.getDate() + parseInt(1);
+        // e.g., time1.getDate() + 1;
         // this allows the nightly compliance checker to function properly; changing this will mess with compliance checker unless you modify that
-        var day1 = time1.getDate() + 1; //**TESTING: to test app, remove the parseInt(1) so the notifs fire same day */
-        console.log("day1: "+day1);
+        var day1 = time1.getDate() + 1; //**TESTING: to test app, remove the +1 so the notifs fire same day */
         var day2 = time2.getDate() + 1;
         var day3 = time3.getDate() + 1;
         var day4 = time4.getDate() + 1;
@@ -366,7 +365,7 @@ var app = {
         //**CHANGEME */
         // declare the name of the collection/folder on firebase storage to store data from current survey
         // the code below saves to different collections depending on whether participants snoozed/setup the app or completed a survey
-        var firebaseFolder = snoozed || settingup ? "expsampling_jsPsych_FULL_setuporsnooze" : "expsampling_jsPsych_FULL_responses";
+        var firebaseFolder = snoozed || settingup ? "expsampling_jsPsych_FULL_setuporsnooze" : "expsampling_jsPsych_FULL_responses"; //**CHANGEME */
 
         // save data (FEATURE TO ADD IN THE FUTURE: wrap in a promise to check if data successfully sent)
         db.collection(firebaseFolder).add(trialdata_saveObj);
@@ -514,6 +513,7 @@ var app = {
 /* Program jsPsych Experiment Questions */
 // these questions will be presented to participants at different stages of participation
 // (e.g., setup, experience-sampling, end-of-survey messages)
+
 //**CHANGEME */
 var appReady = {
     /* Program your app setup questions here */
@@ -1248,7 +1248,7 @@ var appReady = {
         const save_data_OSF = {
             type: jsPsychPipe,
             action: "save",
-            experiment_id: "qwRXQ37fP2aQ", //**CHANGEME */
+            experiment_id: "V8YB4SpcpFis", //**CHANGEME */
             filename: filename,
             data_string: ()=>jsPsych.data.get().csv()
         };
